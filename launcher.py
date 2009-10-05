@@ -1,26 +1,29 @@
-import re
+import re, sys
 
-import pygame
+try:
+	import pygame
+except ImportError:
+	sys.exit("Can't find pygame. You won't get far without that! http://www.pygame.org/")
 
-import command_line
-import message_center
-
-import game_state
+import command_line, message_center, game_state, text_object, event
 
 pygame.init()
 
 screen = pygame.display.set_mode((1280, 720))
 
-from text_object import TextObject, SurfaceAnchoredText
-
 terminal_surface = screen.subsurface((10,10,800,540))
 text_area = terminal_surface.subsurface((10,10,780,520))
 terminal_surface.fill((0x0C,0x26,0x0C))
 
-text_object = TextObject(font_size=20)
-text_anchor = SurfaceAnchoredText(text_area, text_object=text_object, fg_color=(0x66,0xDD,0x66), bg_color=(0x0C,0x26,0x0C))
+terminal_text_object = text_object.TextObject(font_size=20)
+terminal_text_anchor = text_object.SurfaceAnchoredText(surface=text_area, text_object=terminal_text_object, fg_color=(0x66,0xDD,0x66), bg_color=(0x0C,0x26,0x0C))
 
-text_anchor.draw()
+line_size = terminal_text_object.font.get_linesize()
+terminal_message_queue = []
+terminal_max_history = 100 # Arbitrary default... 100 messages clearly won't fit on-screen, and even if they are very long won't take enough memory to matter.
+terminal_visible_messages = int(float(screen.get_height())/float(line_size))
+
+terminal_text_anchor.draw()
 
 main_command_line = command_line.CommandLine((10,560,800,150))
 
@@ -43,10 +46,13 @@ def command_test(*args):
 command_line.Command("test", command_test)
 
 def get_message_for_terminal():
+	global terminal_message_queue, terminal_text_anchor, terminal_max_lines, terminal_visible_messages
 	message, channel = message_center.get_message_with_channel()
 	if message != None:
-		text_anchor.add_text("\n" + message)
-		text_anchor.draw()
+		terminal_message_queue.append(message)
+		while len(terminal_message_queue) > terminal_max_history: terminal_message_queue.pop(0)
+		terminal_text_anchor.replace_text("\n".join(terminal_message_queue[-terminal_visible_messages:]))
+		terminal_text_anchor.draw()
 		
 typing_buffer = []
 
