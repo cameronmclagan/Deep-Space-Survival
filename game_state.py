@@ -20,13 +20,13 @@ class GameState(event.EventDispatcher):
 		self.visible_marker_dict = {}
 		
 		global terminal_search_dict
-		focus_object_argument = command_line.GameObjectArgumentHandler(search_dict=terminal_search_dict, filter_functions=(lambda x: (isinstance(x, FocusTarget) and x.focus_commands),))
-		move_target_argument = command_line.GameObjectArgumentHandler(search_dict=terminal_search_dict, filter_functions=(lambda x: (hasattr(x, 'destination') and isinstance(x.destination, FocusTarget)),))
+		self.focus_object_argument = command_line.GameObjectArgumentHandler(search_dict=terminal_search_dict, filter_functions=(lambda x: (isinstance(x, FocusTarget) and x.focus_commands),))
+		self.move_target_argument = command_line.GameObjectArgumentHandler(search_dict=terminal_search_dict, filter_functions=(lambda x: (hasattr(x, 'destination') and isinstance(x.destination, FocusTarget)),))
 
 
-		self.focus_command = command_line.Command("focus", self.focus_on_marker, (focus_object_argument,))
+		self.focus_command = command_line.Command("focus", self.focus_on_marker, (self.focus_object_argument,))
 		self.defocus_command = command_line.Command("defocus", self.defocus)
-		self.move_command = command_line.Command("move", self.move_through_object, (move_target_argument,))
+		self.move_command = command_line.Command("move", self.move_through_object, (self.move_target_argument,))
 	
 	def copy():
 		state_copy = GameState()
@@ -41,12 +41,14 @@ class GameState(event.EventDispatcher):
 	def new_command_dict(self, command_dict):
 		self.command_dict = command_dict
 		
-		self.command_dict["focus"] = self.focus_command
+		if len(self.focus_object_argument.get_completions_starting_with("")) > 0 :
+			self.command_dict["focus"] = self.focus_command
 		
 		if len(self.focus_stack) > 1:
 			self.command_dict["defocus"] = self.defocus_command
-			
-		self.command_dict["move"] = self.move_command
+		
+		if len(self.move_target_argument.get_completions_starting_with("")) > 0 :
+			self.command_dict["move"] = self.move_command
 		
 		self.dispatch_event('on_new_command_dict', command_dict)
 	
@@ -54,9 +56,12 @@ class GameState(event.EventDispatcher):
 		if identifier in self.marker_dict:
 			return self.marker_dict[identifier]
 		else:
-			new_marker = GameMarker(identifier=identifier)
-			self.marker_dict[identifier] = new_marker
-			return new_marker
+			return self.new_marker_for_identifier(identifier)
+		
+	def new_marker_for_identifier(self, identifier, **kwargs):
+		new_marker = GameMarker(identifier=identifier, **kwargs)
+		self.marker_dict[identifier] = new_marker
+		return new_marker
 	
 	def destroy_marker(self, identifier):
 		if identifier in self.marker_dict:
@@ -68,43 +73,43 @@ class GameState(event.EventDispatcher):
 		
 			del self.marker_dict[identifier]
 	
-	def focus_on_marker(self, params):
-		target_marker = params[0]
+	def focus_on_marker(self, *args):
+		target_marker = args[0]
 		if (len(self.focus_stack) == 0) or (self.focus_stack[-1] != target_marker):
 			self.focus_stack.append(target_marker)
 		
 		self.refresh_focus_info()
 		
-	def defocus(self, params):
+	def defocus(self, *args):
 		if len(self.focus_stack) > 0:
 			x = self.focus_stack.pop()
 			x.on_defocus()
 		
 		self.refresh_focus_info()
 	
-	def refocus_on_marker(self, params):
-		self.defocus(params)
-		self.focus_on_marker(params)
+	def refocus_on_marker(self, *args):
+		self.defocus(*args)
+		self.focus_on_marker(*args)
 	
-	def move_through_object(self, params):
-		object = params[0]
-		self.refocus_on_marker((object.destination,))
+	def move_through_object(self, *args):
+		object = args[0]
+		self.refocus_on_marker(object.destination)
 	
 	def refresh_focus_info(self):
 		global terminal_search_dict
 		if len(self.focus_stack) > 0:
 			self.focus_stack[-1].on_focus()
-			self.new_command_dict(self.focus_stack[-1].focus_commands)
-		
 			visible_markers = self.focus_stack[-1].get_visible_markers()
 		
 			terminal_search_dict.clear()
 			for marker in visible_markers:
 				terminal_search_dict[marker.visible_name] = marker
+
+			self.new_command_dict(self.focus_stack[-1].focus_commands)
 		else:
-			self.new_command_dict({})
-			
 			terminal_search_dict.clear()
+			self.new_command_dict({})
+
 	
 		
 
@@ -124,36 +129,49 @@ def save_game_state_to_file(filename):
 	current_state.save_to_file(filename)
 
 class FocusTarget:
-	def __init__(self, focus_commands, auto_focus=False, add_keys_on_focus=(), rem_keys_on_focus=()):
+	def __init__(self, focus_commands, auto_focus=False, add_keys_on_focus=(), rem_keys_on_focus=(), have_keys_while_focus=()):
 		self.focus_commands = focus_commands
 		self.auto_focus = auto_focus
 		
 		self.add_keys_on_focus = add_keys_on_focus
 		self.rem_keys_on_focus = rem_keys_on_focus
+		self.have_keys_while_focus = have_keys_while_focus
 	
 	def on_focus(self):
-		self.do_focus_keys
+		self.do_focus_keys()
+		if hasattr(self, 'object') and hasattr(self.object, 'on_focus'):
+			self.object.on_focus()
 	
 	def do_focus_keys(self):
 		for key in self.add_keys_on_focus:
-			game_state.current_state.key_set.add_key(key)
+			current_state.key_set.add_key(key)
 		
 		for key in self.rem_keys_on_focus:
-			game_state.current_state.key_set.rem_key(key)
+			current_state.key_set.rem_key(key)
+		
+		for key in self.have_keys_while_focus:
+			current_state.key_set.add_key(key)
 	
 	def on_defocus(self):
-		pass
+		self.do_defocus_keys()
+	
+	def do_defocus_keys(self):
+		for key in self.have_keys_while_focus:
+			current_state.key_set.rem_key(key)
 
 class GameMarker(FocusTarget):
 	"""A class which represents any discrete game entity. Instances of this class can  and can be targetted by the player."""
-	def __init__(self, identifier, visible_name=None, object=None, location=None, keys_for_spawn=(), keys_for_despawn=(), focus_commands={}, auto_focus=False, add_keys_on_focus=(), rem_keys_on_focus=()):
+	def __init__(self, identifier, visible_name=None, object=None, location=None, destination=None, keys_for_spawn=(), keys_for_despawn=(), focus_commands={}, auto_focus=False, add_keys_on_focus=(), rem_keys_on_focus=()):
 		self.identifier = identifier
 		if visible_name == None: visible_name = identifier
-		self.visible_name = identifier
+		self.visible_name = visible_name
 		
 		self.object = object
 		
-		self.location = location
+		self.location = None
+		self.move_to_marker(location)
+		
+		self.destination = destination
 		
 		self.keys_for_spawn = keys_for_spawn
 		self.keys_for_despawn = keys_for_despawn
@@ -208,6 +226,6 @@ class GameMarker(FocusTarget):
 		"""Return a list of all markers attached to this one who should be visible to the player (the term 'visible' is used loosely; any marker that meets its own spawn conditions is considered visible)."""
 		visible_markers = []
 		for marker in self.marker_list:
-			#if marker.is_spawned():
+			if marker.is_spawned():
 				visible_markers.append(marker)
 		return visible_markers

@@ -38,7 +38,7 @@ class CommandLine():
 		self.inner_rect = pygame.Rect((7,7,self.surface.get_width()-14,self.surface.get_height()-14))
 		self.text_subsurface = self.surface.subsurface(self.inner_rect)
 		
-		self.text_anchor = text_object.SurfaceAnchoredText(self.text_subsurface, fg_color=self.fg_color, bg_color=self.bg_color)
+		self.text_anchor = text_object.SurfaceAnchoredText(self.text_subsurface, font_color=self.fg_color, bg_color=self.bg_color, font_size=font_size)
 		
 		self.command_dict=command_dict
 		
@@ -138,8 +138,7 @@ class CommandLine():
 		if self.current_line_is_complete():
 			self.clear_current_line()
 
-			message_center.add_message(" ")
-			message_center.add_message(">>> " + current_line)
+			message_center.add_message(" \n>>> " + current_line + "\n")
 			
 			if len(cmd_strings) == 0 : # User has entered blank command
 				return
@@ -167,7 +166,7 @@ class CommandLine():
 					raise StandardCommandError("Could not parse arguments; see previous errors. Try 'help %s' for command help." % command_string)
 			
 				### If we made it this far, we have a valid command object which accepts the argument objects we have retreived.
-				command_object.execute(arg_objects)
+				command_object.execute(*arg_objects)
 			except StandardCommandError as e:
 				message_center.add_message(str(e), "terminal_error")
 				
@@ -256,8 +255,8 @@ class Command:
 		
 		command_dict[command_string] = self
 	
-	def execute(self, argument_items):
-		self.function(argument_items)
+	def execute(self, *args):
+		self.function(*args)
 
 class ArgumentHandler:
 	def __init__(self, arg_type=ARG_STRING, filter_functions=None):

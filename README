@@ -1,0 +1,61 @@
+#=============================================================================#
+|                           [ Deep Space Survival ]                           |
+#=============================================================================#
+
+Deep Space Survival is a mostly-text-based survival-horror game written in
+Python using Pygame. The game setting and themes are being written in the style
+of games like System Shock, Dead Space, and many others. Obviously as a
+text-based game (mostly) DSS will need to rely more on storytelling,
+exploration, strategy, and resource management than many of the games that
+inspired it. This is fine by me, since those are the aspects I enjoy most about
+the games in question.
+
+#=============================================================================#
+|                            [ Mostly-Text-Based ]                            |
+#=============================================================================#
+
+When I say "Mostly-Text-Based" I mean that the game environment is conveyed to
+the player in a primarily textual format. Furthermore, the player's actions are
+expressed to the game engine in a primarily textual format. This is not to say
+that the game can't contain visual or audible elements where they will add to
+the gameplay experience; it would be a waste to pass up any opportunity to make
+the game more enjoyable and accessible. With that said, the core goal of the
+project is still a "Mostly-Text-Based" game; all other decisions hinge on that.
+
+#=============================================================================#
+|                         [ Core Gameplay Elements ]                          |
+#=============================================================================#
+
+These are intended as the main elements of gameplay:
+
+[Exploration]
+The game takes place inside man-made artificial environments in space. The
+player is tasked with exploring these environments in order to ensure his own
+survival and the resolution of larger goals. Environments will be designed so
+that the player needs to explore to succeed; the resources necessary to defeat
+challenges will be well hidden, and the path to the goal will rarely be the
+most obvious one. To prevent tedium, the exploration process itself needs to be
+entertaining. Providing interesting information about the setting and the story
+will be the first measure to prevent tedium. Active challenges will be the
+second; solving puzzles, overcoming hazards, and defeating enemies all engage
+the player mentally and keep him from falling asleep at the keyboard as he
+wanders the desloate halls of an abandoned space station.
+
+[Resource Management]
+One of the keys to success in the game will be proper resource management. One
+of the player's primary goals from game start to game over is finding weapons,
+ammunition, and other supplies. If the player misuses these resources, he will
+find the game becomes increasingly difficult until he learns to allocate them
+better or the game becomes so difficult that he cannot progress. Losing the
+game by running out of resources is not much fun, however, so there will always
+be a minor flow of extra resources and the game will never become completely
+unplayable without them (Example: Low- to middle-difficulty enemies constantly
+respawn in some areas and the player always has some inexhaustible means of
+defeating these enemies. By grinding these enemies using his inexhaustible
+offensive abilities, the player can collect resources from them until he is
+able to progress the game once more. The player is penalized for poor choices,
+but the penalty is actually just a chance to recover and learn from mistakes.)
+
+#=============================================================================#
+|                           [ To Be Continued..! ]                            |
+#=============================================================================#

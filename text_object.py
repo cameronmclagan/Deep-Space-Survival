@@ -45,10 +45,7 @@ def do_text_substitution_using_dictionary(text, dictionary):
 
 	for keyword in keyword_list:
 		temp_sub_re = re.compile( r"\%\{" + keyword + r"\}\%")
-		try:
-			text = temp_sub_re.sub(dictionary[keyword], text)
-		except KeyError:
-			print "Key", keyword, "not found! Substitution failed."
+		text = temp_sub_re.sub(dictionary.get(keyword,""), text)
 
 	return text
 
@@ -73,9 +70,11 @@ def make_color_change_events_for_text(text):
 pygame.font.init()
 
 class TextObject:
-	def __init__(self, text="", font_name="Droid Sans,Bitstream Vera Sans", font_size=16, sub_dict={}):
+	def __init__(self, width, text="", font_name="Droid Sans,Bitstream Vera Sans", font_size=16, font_color=(0xFF,0xFF,0xFF), font_bold=False, font_italic=False, sub_dict={}):
+		self.width = width
 		self.original_text = text
-		self.font = pygame.font.SysFont(font_name, font_size)
+		self.font = pygame.font.SysFont(font_name, font_size, font_bold, font_italic)
+		self.font_color=font_color
 		self.sub_dict = sub_dict
 		self.reset()
 
@@ -83,7 +82,9 @@ class TextObject:
 		self.text = self.original_text + " "
 		self.text = do_text_substitution_using_dictionary(self.text, self.sub_dict)
 		self.text, self.color_changes = make_color_change_events_for_text(self.text)
-		self.line_breaks = []
+		self.line_breaks = make_line_break_events_based_on_text_width_and_font(self.text, self.width, self.font)
+		self.make_line_surfaces()
+		self.make_finished_surface()
 	
 	def replace_text(self, new_text):
 		self.original_text = new_text
@@ -92,44 +93,22 @@ class TextObject:
 	def add_text(self, new_text):
 		self.replace_text(self.original_text + new_text)
 	
-	def break_for_width(self, width):
-		self.line_breaks = make_line_break_events_based_on_text_width_and_font(self.text, width, self.font)
-
-class SurfaceAnchoredText:
-	def __init__(self, surface, text_object=None, fg_color=(0x00,0x00,0x00), bg_color=(0xFF,0xFF,0xFF)):
-		self.surface = surface
-
-		if text_object == None: text_object = TextObject()
-		self.text_object = text_object
-		
-		self.fg_color = fg_color
-		self.bg_color = bg_color
-		
-		self.make_line_surfaces()
-	
-	def replace_text(self, new_text):
-		self.text_object.replace_text(new_text)
-		self.make_line_surfaces()
-	
-	def add_text(self, new_text):
-		self.text_object.add_text(new_text)
-		self.make_line_surfaces()
+	def set_width(self, width):
+		self.width = width
+		self.reset()
 	
 	def make_line_surfaces(self):
 		surface_list = []
 		
-		current_fg_color = self.fg_color
+		current_fg_color = self.font_color
 		
 		current_break_index = 0
 		current_color_index = 0
 
-		self.text_object.break_for_width(self.surface.get_width())
-		
-		text = self.text_object.text
-		font = self.text_object.font
-		color_changes = self.text_object.color_changes
-		line_breaks = self.text_object.line_breaks
-		surface = self.surface
+		text = self.text
+		font = self.font
+		color_changes = self.color_changes
+		line_breaks = self.line_breaks
 		
 		color_changes.sort()
 		line_breaks.sort()
@@ -148,7 +127,7 @@ class SurfaceAnchoredText:
 			
 			if current_break_index < len(line_breaks) and line_breaks[current_break_index] == n :
 				sub_line_list.append(font.render(text[last_draw_end:n].strip("\n"), True, current_fg_color))
-				temp_surface = pygame.Surface((surface.get_width(), sub_line_list[0].get_height())).convert_alpha()
+				temp_surface = pygame.Surface((self.width, sub_line_list[0].get_height())).convert_alpha()
 				temp_surface.fill((0,0,0,0))
 				x_offset = 0
 				for s in sub_line_list :
@@ -162,32 +141,46 @@ class SurfaceAnchoredText:
 			n += 1
 		
 		self.line_surfaces = surface_list
-		
+	
+	def get_total_height(self):
 		total_height = 0
+		for surface in self.line_surfaces:
+			total_height += surface.get_height()
+		return total_height
+	
+	def make_finished_surface(self):
+		height = self.get_total_height()
+		finished_surface = pygame.Surface((self.width, height)).convert_alpha()
+		finished_surface.fill((0,0,0,0))
+		y_offset = 0
 		for line_surface in self.line_surfaces:
-			total_height += line_surface.get_height()
+			finished_surface.blit(line_surface,(0, y_offset))
+			y_offset += line_surface.get_height()
+		self.finished_surface = finished_surface
+	
+	def get_finished_surface(self):
+		return self.finished_surface
+
+class SurfaceAnchoredText:
+	def __init__(self, surface, bg_color=(0xFF,0xFF,0xFF), text="", font_name="Droid Sans,Bitstream Vera Sans", font_size=16, font_color=(0xFF,0xFF,0xFF), sub_dict={}):
+		self.surface = surface
+
+		self.text_object = TextObject(width=self.surface.get_width(), text=text, font_name=font_name, font_size=font_size, font_color=font_color, sub_dict=sub_dict)
 		
-		if total_height <= self.surface.get_height():
-			self.draw_from_bottom_up = False
-		else:
-			self.draw_from_bottom_up = True
+		self.bg_color = bg_color
+		
+	def replace_text(self, new_text):
+		self.text_object.replace_text(new_text)
+	
+	def add_text(self, new_text):
+		self.text_object.add_text(new_text)
 	
 	def draw(self):
-		self.surface.fill(self.bg_color)
+		text_surface = self.text_object.finished_surface
+
+		self.surface.fill(self.bg_color, text_surface.get_rect())
 	
-		if self.draw_from_bottom_up:
-			y_offset = self.surface.get_height()
-			for s in reversed(self.line_surfaces) :
-				y_offset -= s.get_height()
-				if y_offset < 0:
-					break
-				else:
-					self.surface.blit(s, (0, y_offset))
+		if text_surface.get_height() < self.surface.get_height():
+			self.surface.blit(text_surface,(0,0))
 		else:
-			y_offset = 0
-			for s in self.line_surfaces :
-				if y_offset > self.surface.get_height():
-					break
-				else:
-					self.surface.blit(s, (0, y_offset))
-				y_offset += s.get_height()
+			self.surface.blit(text_surface, (0, self.surface.get_height()-text_surface.get_height()))
