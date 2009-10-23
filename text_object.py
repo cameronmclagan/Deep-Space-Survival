@@ -178,7 +178,7 @@ class SurfaceAnchoredText:
 	def draw(self):
 		text_surface = self.text_object.finished_surface
 
-		self.surface.fill(self.bg_color, text_surface.get_rect())
+		self.surface.fill(self.bg_color)
 	
 		if text_surface.get_height() < self.surface.get_height():
 			self.surface.blit(text_surface,(0,0))

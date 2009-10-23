@@ -7,6 +7,11 @@ import command_line
 
 terminal_search_dict = {}
 
+int_to_en =('zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
+			'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth',
+			'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth',
+			'eighteenth', 'nineteenth', 'twentieth' )
+
 class GameState(event.EventDispatcher):
 	def __init__(self):
 		self.key_set = key_set.KeySet()
@@ -53,10 +58,10 @@ class GameState(event.EventDispatcher):
 		self.dispatch_event('on_new_command_dict', command_dict)
 	
 	def get_marker_for_identifier(self, identifier):
-		if identifier in self.marker_dict:
+		#if identifier in self.marker_dict:
 			return self.marker_dict[identifier]
-		else:
-			return self.new_marker_for_identifier(identifier)
+		#else:
+		#	return self.new_marker_for_identifier(identifier)
 		
 	def new_marker_for_identifier(self, identifier, **kwargs):
 		new_marker = GameMarker(identifier=identifier, **kwargs)
@@ -77,7 +82,7 @@ class GameState(event.EventDispatcher):
 		target_marker = args[0]
 		if (len(self.focus_stack) == 0) or (self.focus_stack[-1] != target_marker):
 			self.focus_stack.append(target_marker)
-		
+		print "Change focus to: " + target_marker.identifier
 		self.refresh_focus_info()
 		
 	def defocus(self, *args):
@@ -96,15 +101,25 @@ class GameState(event.EventDispatcher):
 		self.refocus_on_marker(object.destination)
 	
 	def refresh_focus_info(self):
-		global terminal_search_dict
+		global terminal_search_dict, int_to_en
 		if len(self.focus_stack) > 0:
 			self.focus_stack[-1].on_focus()
 			visible_markers = self.focus_stack[-1].get_visible_markers()
 		
 			terminal_search_dict.clear()
+			duplicate_target_counters = {}
 			for marker in visible_markers:
-				terminal_search_dict[marker.visible_name] = marker
-
+				if marker.visible_name in duplicate_target_counters:
+					duplicate_target_counters[marker.visible_name] += 1
+					terminal_search_dict[int_to_en[duplicate_target_counters[marker.visible_name]] + "_" + marker.visible_name] = marker
+				elif marker.visible_name in terminal_search_dict:
+					terminal_search_dict[int_to_en[1] + "_" + marker.visible_name] = terminal_search_dict[marker.visible_name]
+					terminal_search_dict[int_to_en[2] + "_" + marker.visible_name] = marker
+					duplicate_target_counters[marker.visible_name] = 2
+					del terminal_search_dict[marker.visible_name]
+				else:
+					terminal_search_dict[marker.visible_name] = marker
+			
 			self.new_command_dict(self.focus_stack[-1].focus_commands)
 		else:
 			terminal_search_dict.clear()

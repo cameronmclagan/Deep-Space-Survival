@@ -23,10 +23,6 @@ class MarkerBoundObject:
 		self.formatted_name = name.lower().replace(" ", "_")
 		self.formatted_name = re.sub(r"\W","",self.formatted_name)
 		self.unique_name = self.formatted_name + "_" + str(get_unique_id())
-		
-		if use_identifier == None: use_identifier = self.unique_name
-		if use_game_state == None: use_game_state = game_state.current_state
-		self.marker = use_game_state.new_marker_for_identifier(identifier=use_identifier, visible_name=self.formatted_name, object=self, **kwargs)
 
 class VisibleObject:
 	def __init__(self, description = None):
@@ -59,12 +55,22 @@ class Item(MarkerBoundObject, VisibleObject):
 		MarkerBoundObject.__init__(self, self.name, focus_commands = item_commands, location = marker_location)
 		VisibleObject.__init__(self, description)
 		
+	def generate_description(self):
+		message_center.add_message(channel="heading",message=self.name)
+		if self.description != None:
+			message_center.add_message(channel="default", message=" \n" + self.description + "\n")
+		else:
+			message_center.add_message(channel="default", message=" \n")
+		sub_markers = self.marker.get_visible_markers()
+		if len(sub_markers)> 0:
+			message_center.add_message(channel="subheading",message="Looking inside, you find...")
+			message_center.add_message(channel="item", message="\n".join([m.object.name for m in sub_markers if hasattr(m.object, 'name')]))
 
-class Area(MarkerBoundObject, VisibleObject):
-	def __init__(self, name, area_identifier, description=None):
+class Room(MarkerBoundObject, VisibleObject):
+	def __init__(self, name, description=None):
 		self.name = name
 
-		MarkerBoundObject.__init__(self, name, use_identifier=area_identifier)
+		MarkerBoundObject.__init__(self, name)
 		VisibleObject.__init__(self, description)
 		
 	def generate_description(self):
@@ -74,7 +80,7 @@ class Area(MarkerBoundObject, VisibleObject):
 			message_center.add_message(channel="default", message=" \n" + self.description + "\n")
 		else:
 			message_center.add_message(channel="default", message=" \n")
-		message_center.add_message(channel="subheading",message="Things Here")
+		message_center.add_message(channel="subheading",message="Looking around, you find...")
 		message_center.add_message(channel="item", message="\n".join([m.object.name for m in self.marker.get_visible_markers() if hasattr(m.object, 'name')]))
 		return lines
 
@@ -97,7 +103,7 @@ def class_type_filter(type):
 from command_line import Command, GameObjectArgumentHandler
 
 ### COMMANDS ###
-area_commands = {}
+room_commands = {}
 scenery_commands = {}
 item_commands = {}
 
@@ -125,11 +131,11 @@ def describe_focus(*args):
 def list_player_inventory(*args):
 	the_player_marker = game_state.current_state.get_marker_for_identifier("the_player")
 
-Command("inventory", list_player_inventory, command_dict=area_commands)
+Command("inventory", list_player_inventory, command_dict=room_commands)
 
 ### area_description ###
 # 
-Command("area_description", describe_focus, command_dict=area_commands)
+Command("area_description", describe_focus, command_dict=room_commands)
 
 debug_commands = False
 
@@ -137,13 +143,13 @@ debug_commands = False
 def current_keys(*args):
 	for key in game_state.current_state.key_set.dict.keys():
 		message_center.add_message(str(key))
-if debug_commands: Command("key_list", current_keys, command_dict=area_commands)
+if debug_commands: Command("key_list", current_keys, command_dict=room_commands)
 
 ### marker_list ###
 def current_markers(*args):
 	for key in game_state.terminal_search_dict.keys():
 		message_center.add_message(str(key))
-if debug_commands: Command("marker_list", current_markers, command_dict=area_commands)
+if debug_commands: Command("marker_list", current_markers, command_dict=room_commands)
 
 ########################
 ### SCENERY COMMANDS ###

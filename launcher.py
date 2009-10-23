@@ -1,20 +1,28 @@
 import re, sys, math
 
+if sys.version_info[0] > 2:
+	print "This program was written for python 2.6 and has not been tested with 3.0 or greater."
+elif sys.version_info[0] < 2 or sys.version_info[1] < 6:
+	sys.exit("This program was written for python 2.6 and will fail on any older version.")
+
 try:
 	import pygame
 except ImportError:
 	sys.exit("Can't find pygame. You won't get far without that! http://www.pygame.org/")
 
-import command_line, message_center, game_state, text_object, event
+import terminal_display, command_line, message_center, game_state, event
 
 pygame.init()
 
 screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
-#screen = pygame.display.set_mode((1152, 720))
+#screen = pygame.display.set_mode((1440, 900))
 
-import terminal_display
-
-main_terminal = terminal_display.TerminalDisplay((10,10,(screen.get_width()-30)/2,screen.get_height()-(200+30)), fg_color=(0xba,0xbd,0xb6), bg_color=(0x1E,0x24,0x26), font_size=20)
+import xml_interface_loader
+root_interface_objects = xml_interface_loader.load_interface_from_file_with_initial_rect("interface_layout.xml", screen.get_rect())
+root = root_interface_objects[0]
+root.draw_to_surface(screen)
+#main_terminal = terminal_display.TerminalDisplay((10,10,(screen.get_width()-30)/2,screen.get_height()-(150+30)), fg_color=(0xba,0xbd,0xb6), bg_color=(0x1E,0x24,0x26), font_size=20)
+main_terminal = root.search_for_identifier("main_terminal")
 
 channel_styles =	{
 	"default":{"font_color":(0xBA,0xBD,0xB6),"font_name":"Droid Sans"},	
@@ -24,13 +32,13 @@ channel_styles =	{
 	"fail":{"font_color":(0xf5,0x79,0x00)},
 	}
 
-main_command_line = command_line.CommandLine(
-		(
-		10,
-		main_terminal.rect.height+20,
-		main_terminal.rect.width,
-		(screen.get_height()-(main_terminal.rect.height+30))
-		), fg_color=(0xba,0xbd,0xb6), bg_color=(0x1E,0x24,0x26), font_size=20)
+main_command_line = root["main_command"]
+
+def exit_func():
+	global done
+	done=True
+exit_button = root["exit_button"]
+exit_button.function = exit_func
 
 #rightbar_logo = pygame.image.load("DSS_Stolen_Logo_Big.png")
 #screen.blit(rightbar_logo, (main_terminal.rect.width+20,10))
@@ -79,8 +87,25 @@ def get_message_for_terminal(ms):
 		else:
 			break
 		
-fps_functions[FPS15].append(get_message_for_terminal)
+fps_functions[FPS05].append(get_message_for_terminal)
 fps_functions[FPS60].append(lambda ms: main_terminal.scroll_by_milliseconds(ms) and main_terminal.draw_to_surface(screen))
+
+focus_list = []
+def find_mouse_focus(*args):
+	global focus_list, root
+	old_list = focus_list
+	pos = pygame.mouse.get_pos()
+	focus_list = root.search_for_collision(pos)
+	for x in old_list:
+		if x not in focus_list: x.on_mouse_unhover(pos)
+	for x in focus_list:
+		if x not in old_list: x.on_mouse_hover(pos)
+	
+
+fps_functions[FPS15].append(find_mouse_focus)
+
+fps_functions[FPS15].append(lambda ms: root.draw_to_surface(screen))
+
 
 typing_buffer = []
 
@@ -97,6 +122,15 @@ while not done :
 				done = True
 			else:
 				main_command_line.keydown_event(event)
+		elif event.type == pygame.MOUSEBUTTONDOWN:
+			if event.button == 1:
+				pos = pygame.mouse.get_pos()
+				global focus_list
+				for x in focus_list: x.on_mouse_leftclick(pos)
+			elif event.button == 3:
+				pos = pygame.mouse.get_pos()
+				global focus_list
+				for x in focus_list: x.on_mouse_rightclick(pos)
 	
 	main_command_line.draw_to_surface(screen)
 	pygame.display.flip()

@@ -24,19 +24,18 @@ class ArgumentError(Exception):
 class StandardCommandError(Exception):
 	pass
 
-class CommandLine():
-	def __init__(self, rect, command_dict=default_command_dict, fg_color=(0x66,0xDD,0x66), bg_color=(0x0C,0x26,0x0C), font_name="Droid Sans Mono,Bitstream Vera Sans Mono,Courier", font_size=16):
-		self.rect = pygame.Rect(rect)
+import interface_classes
+
+class CommandLine(interface_classes.Drawable):
+	def __init__(self, rect, identifier=None, command_dict=default_command_dict, fg_color=(0x66,0xDD,0x66), bg_color=(0x0C,0x26,0x0C), font_name="Droid Sans Mono,Bitstream Vera Sans Mono,Courier", font_size=16):
+		interface_classes.Drawable.__init__(self, rect, identifier)
 		
 		self.fg_color = fg_color
 		self.bg_color = bg_color
 		
+		print self.rect.size
 		self.surface = pygame.Surface(self.rect.size)
-		self.surface.fill(self.fg_color)
-		self.surface.fill(self.bg_color, (2,2,self.surface.get_width()-4,self.surface.get_height()-4))
-		
-		self.inner_rect = pygame.Rect((7,7,self.surface.get_width()-14,self.surface.get_height()-14))
-		self.text_subsurface = self.surface.subsurface(self.inner_rect)
+		self.text_subsurface = self.surface
 		
 		self.text_anchor = text_object.SurfaceAnchoredText(self.text_subsurface, font_color=self.fg_color, bg_color=self.bg_color, font_size=font_size)
 		
