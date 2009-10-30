@@ -17,6 +17,9 @@ element_mappings = {
 	"command_line":command_line.CommandLine,
 	"border_box":interface_classes.BorderBox,
 	"button":interface_widgets.Button,
+	"meter":interface_widgets.Meter,
+	"label":interface_widgets.Label,
+	"image":interface_widgets.Image,
 	}
 
 nesting_stack = []
@@ -35,7 +38,6 @@ def start_element(element_type, element_attributes):
 		elif key.endswith("_color"): val = [int(x,16) for x in val.split(",")]
 		args[str(key)] = val
 	
-	print element_type
 	if len(nesting_stack) > 0:
 		rect = nesting_stack[-1].get_next_rect()
 		element_object = element_mappings[element_type](rect=rect, **args)

@@ -1,59 +1,129 @@
 <layout>
 	<column ratio="1,20">
-	<row ratio="2,1,2,1,2">
-		<row ratio="1,1,1,1">
+	<row ratio="2,4,2">
+		<row ratio="1,1,1">
+			<!-- border_box fg_color="0xba,0xbd,0xb6" padding="0">
+				<button label="MENU" identifier="menu_button" font_name="Alpha Echo" font_size="30" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
+			</border_box -->
 			<border_box fg_color="0xba,0xbd,0xb6" padding="0">
-				<button label="MENU" identifier="menu_button" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
+				<button label="SAVE" identifier="save_button" font_name="Alpha Echo" font_size="30" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
 			</border_box>
 			<border_box fg_color="0xba,0xbd,0xb6" padding="0">
-				<button label="SAVE" identifier="save_button" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
+				<button label="LOAD" identifier="load_button" font_name="Alpha Echo" font_size="30" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
 			</border_box>
 			<border_box fg_color="0xba,0xbd,0xb6" padding="0">
-				<button label="LOAD" identifier="load_button" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
-			</border_box>
-			<border_box fg_color="0xba,0xbd,0xb6" padding="0">
-				<button label="EXIT" identifier="exit_button" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
+				<button label="EXIT" identifier="exit_button" font_name="Alpha Echo" font_size="30" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
 			</border_box>
 		</row>
-		<filler />
-		<row ratio="1,1,1,1">
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-		</row>
-		<filler />
-		<row ratio="1,1,1,1">
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
+
+		<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
+
+		<row ratio="1">
+			<border_box fg_color="0xba,0xbd,0xb6" padding="0">
+				<button label="CLICK FOR FULLSCREEN" identifier="fullscreen_button" font_name="Alpha Echo" font_size="30" fg_color="0xED,0xD4,0x00" bg_color="0x1E,0x24,0x26" glow_color="0x3E,0x44,0x46" />
+			</border_box>
 		</row>
 	</row>
 	<row ratio="1,2,1">
-		<column ratio="1,4,1,4,1,4">
-			<filler />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<filler />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<filler />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
+		<column ratio="10,5,5">
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26">
+				<image filename="cryo_dept_logo.png"/>
+			</border_box>
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" padding="10">
+				<column ratio="4,1,20">
+					<label text="Left Hand" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" font_size="30"/>
+					<filler />
+					<row ratio="2,3">
+						<image filename="left_hand.png"/>
+						<column ratio="3,2,1,3,2">
+							<label text="Wearing" font_name="Umbrage" font_size="28" fg_color="0xED,0xD4,0x00" />
+							<label text="nothing" font_name="Umbrage" font_size="24" fg_color="FF,FF,FF"/>
+							<filler/>
+							<label text="Holding" font_name="Umbrage" font_size="28" fg_color="0xED,0xD4,0x00" />
+							<label identifier="left_hand_holding_label" text="nothing" font_name="Umbrage" font_size="24" fg_color="FF,FF,FF" />
+						</column>
+					</row>
+				</column>
+			</border_box>
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26">
+				<column ratio="4,1,4,1,4,1,4,1,4,1,4,1">
+					<label text="Condition Monitor" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" font_size="30"/>
+					<filler/>
+					<row ratio="2,4">
+						<label text="Health" font_name="Umbrage" fg_color="0xED,0xD4,0x00" font_size="24"/>
+						<meter identifier="health_bar" bg_color="44,18,18" fg_color="ef,29,29" fill_color="a4,00,00"/>
+					</row>
+					<filler/>
+					<row ratio="2,4">
+						<label text="Stamina" font_name="Umbrage" fg_color="0xED,0xD4,0x00" font_size="24"/>
+						<meter identifier="health_bar" bg_color="0x18,0x22,0x66" fg_color="72,9f,cf" fill_color="20,4a,87"/>
+					</row>
+					<filler/>
+					<row ratio="2,4">
+						<label text="Focus" font_name="Umbrage" fg_color="0xED,0xD4,0x00" font_size="24"/>
+						<meter identifier="health_bar" bg_color="0x22,0x44,0x00" fg_color="8a,e2,34" fill_color="4e,9a,06"/>
+					</row>
+					<filler/>
+					<row ratio="2,4">
+						<label text="Stress" font_name="Umbrage" fg_color="0xED,0xD4,0x00" font_size="24"/>
+					<meter identifier="health_bar" bg_color="0x44,0x44,0x11" fg_color="fc,e9,4f" fill_color="c4,a0,00"/>
+					</row>
+					<filler/>
+					<row ratio="2,4">
+						<label text="Nutrition" font_name="Umbrage" fg_color="0xED,0xD4,0x00" font_size="24"/>
+						<meter identifier="health_bar" bg_color="0x44,0x33,0x18" fg_color="c9,a9,5e" fill_color="8f,69,22"/>
+					</row>
+				</column>
+			</border_box>
 		</column>
 		<column ratio="5,1">
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" >
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" padding="10">
 				<terminal_display identifier="main_terminal" fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26"/>
 			</border_box>
 			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" >
-				<command_line identifier="main_command" fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26"/>
+				<command_line identifier="main_command" font_size="20" fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26"/>
 			</border_box>
 		</column>
-		<column ratio="1,4,1,4,1,4">
-			<filler />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<filler />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
-			<filler />
-			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" />
+		<column ratio="10,5,5">
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26">
+				<image filename="cryo_dept_map.png" />
+			</border_box>
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" padding="10">
+				<column ratio="4,1,20">
+					<label text="Right Hand" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" font_size="30"/>
+					<filler />
+					<row ratio="3,2">
+						<column ratio="3,2,1,3,2">
+							<label text="Wearing" font_name="Umbrage" font_size="28" fg_color="0xED,0xD4,0x00" />
+							<label text="nothing" font_name="Umbrage" font_size="24" />
+							<filler/>
+							<label text="Holding" font_name="Umbrage" font_size="28" fg_color="0xED,0xD4,0x00" />
+							<label identifier="right_hand_holding_label" text="nothing" font_name="Umbrage" font_size="24" />
+						</column>
+						<image filename="right_hand.png"/>
+					</row>
+				</column>
+			</border_box>
+			<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" >
+				<column ratio="4,1,20">
+					<label text="Your Inventory" font_name="Alpha Echo" fg_color="0xED,0xD4,0x00" font_size="30"/>
+					<filler/>
+					<filler/>
+				</column>
+			</border_box>
+<!--		<border_box fg_color="0xba,0xbd,0xb6" bg_color="0x1E,0x24,0x26" >
+				<column ratio="4,1,4,1,4,1,4,1,4,1">
+					<filler/>
+					<filler/>
+					<meter identifier="health_bar" bg_color="0x44,0x22,0x33" fg_color="ad,7f,a8" fill_color="5c,35,66"/>
+					<filler/>
+					<filler/>
+						<meter identifier="health_bar" bg_color="0x55,0x33,0x18" fg_color="fc,af,3e" fill_color="ce,5c,00"/>
+					<filler/>
+						<meter identifier="health_bar" bg_color="0x44,0x33,0x33" fg_color="f9,a9,b9" fill_color="9f,49,59"/>
+
+				</column>
+			</border_box> -->
 		</column>
 	</row>
 	</column>

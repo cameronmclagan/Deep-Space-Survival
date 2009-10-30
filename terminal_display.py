@@ -12,25 +12,40 @@ class TerminalDisplay(interface_classes.Drawable):
 			bg_color=(0x0C,0x26,0x0C),
 			font_name="Droid Sans Mono,Bitstream Vera Sans Mono,Courier",
 			font_size=16):
-		interface_classes.Drawable.__init__(self, rect, identifier)
 		self.scroll_rate = scroll_rate
 		self.fg_color = fg_color
 		self.bg_color = bg_color
 		self.font_name = font_name
 		self.font_size = font_size
 		
+		self.original_messages = []
+		self.text_object_queue = []
+		self.unscrolled_pixels = 0
+		
+		interface_classes.Drawable.__init__(self, rect, identifier)
+
+		self.add_message(" ")
+
+	def reset_for_new_rect(self):
 		self.surface = pygame.Surface(self.rect.size)
 		self.text_subsurface = self.surface
 		
 		self.text_object_queue = []
-		self.unscrolled_pixels = 0
-		
-		self.add_message(" ")
+		height_total = 0
+		for text, args in reversed(self.original_messages):
+			new_TO = text_object.TextObject(width=self.text_subsurface.get_width(), text=text, **args)
+			self.text_object_queue.insert(0,new_TO)
+			height_total += new_TO.finished_surface.get_height()
+			if height_total > self.text_subsurface.get_height():
+				break
+		self.internal_redraw()
 
 	def add_message(self, text, **kwargs):
 		kwargs.setdefault("font_color", self.fg_color)
 		kwargs.setdefault("font_name", self.font_name)
 		kwargs.setdefault("font_size", self.font_size)
+		
+		self.original_messages.append((text, kwargs))
 		
 		new_TO = text_object.TextObject(width=self.text_subsurface.get_width(), text=text, **kwargs)
 

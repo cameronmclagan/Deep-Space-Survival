@@ -1,0 +1,21 @@
+<deep_space_survival_data game_id='adversity' engine_version='1.0'>
+
+	<template name="11mm Handgun" item_type="weapon" id="11mm_handgun" desc_id="11mm_handgun"/>
+	<text id="11mm_handgun">
+		This is a standard handgun, chambered for 11mm caseless ammunition. It
+		has no accessories or features beyond the ability to project small bits
+		of metal at your foes.
+	</text>
+
+	<template name="11mm Handgun Magazine" item_type="magazine" id="11mm_handgun_mag" desc_id="11mm_handgun_mag"/>
+	<text id="11mm_handgun_mag">
+		This is a detachable magazine for an 11mm pistol. It is designed to hold
+		eight 11mm caseless handgun cartridges.
+	</text>
+
+	<template name="11mm Caseless Handgun Cartridge" item_type="ammunition" id="11mm_handgun_cart" desc_id="11mm_handgun_cart"/>
+	<text id="11mm_handgun_cart">
+		This small, cylindrical object is ammunition for an 11mm handgun.
+	</text>
+
+</deep_space_survival_data>

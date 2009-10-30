@@ -27,31 +27,35 @@ class StandardCommandError(Exception):
 import interface_classes
 
 class CommandLine(interface_classes.Drawable):
-	def __init__(self, rect, identifier=None, command_dict=default_command_dict, fg_color=(0x66,0xDD,0x66), bg_color=(0x0C,0x26,0x0C), font_name="Droid Sans Mono,Bitstream Vera Sans Mono,Courier", font_size=16):
-		interface_classes.Drawable.__init__(self, rect, identifier)
-		
+	def __init__(self, rect, identifier=None, command_dict=default_command_dict, fg_color=(0x66,0xDD,0x66), bg_color=(0x0C,0x26,0x0C), font_name="Droid Sans", font_size=16):
 		self.fg_color = fg_color
 		self.bg_color = bg_color
-		
-		print self.rect.size
-		self.surface = pygame.Surface(self.rect.size)
-		self.text_subsurface = self.surface
-		
-		self.text_anchor = text_object.SurfaceAnchoredText(self.text_subsurface, font_color=self.fg_color, bg_color=self.bg_color, font_size=font_size)
 		
 		self.command_dict=command_dict
 		
 		self.typing_buffer = []
 		self.helper_text = ""
 		self.output_buffer = []
+
+		self.font_name = font_name
+		self.font_size = font_size
+
+		interface_classes.Drawable.__init__(self, rect, identifier)
+
+	def reset_for_new_rect(self):
+		self.surface = pygame.Surface(self.rect.size)
+		self.text_subsurface = self.surface
+		self.text_anchor = text_object.SurfaceAnchoredText(self.text_subsurface, font_color=self.fg_color, bg_color=self.bg_color, font_name=self.font_name, font_size=self.font_size)
 		
 		self.on_text_update()
 		self.internal_redraw()
+		
 
 	def set_command_dict(self, command_dict):
 		self.clear()
 		self.command_dict=command_dict
 		self.on_text_update()
+		self.internal_redraw()
 
 	def get_line_end(self):
 		try:
@@ -143,13 +147,16 @@ class CommandLine(interface_classes.Drawable):
 				return
 			
 			command_string = cmd_strings.pop(0)
-			
+
 			try:
 				if command_string not in command_dict:
 					raise StandardCommandError("Unrecognized Command: " + command_string)
 			
 				command_object = command_dict[command_string]
 			
+				if len(cmd_strings) > 0 and cmd_strings[-1] == "":
+					cmd_strings.pop()			
+
 				if len(command_object.arg_handlers) != len(cmd_strings):
 					raise StandardCommandError("Wrong number of arguments for %s. Try 'help %s' for more information." % (command_string, command_string))
 			
@@ -189,7 +196,10 @@ class CommandLine(interface_classes.Drawable):
 					command_object = command_dict[command_string]
 										
 					if len(cmd_strings) > len(command_object.arg_handlers):
-						self.helper_text = "Too many arguments!"
+						if cmd_strings[-1] == "":
+							self.helper_text = "Command complete. Press enter to continue."
+						else:
+							self.helper_text = "Too many arguments!"
 					else:
 						arg_number = len(cmd_strings)-1
 						arg_string = cmd_strings[arg_number]
@@ -208,7 +218,7 @@ class CommandLine(interface_classes.Drawable):
 			possible_completions = [command  for command in command_dict.keys() if command.startswith(command_in_progress)]
 			if len(possible_completions) == 1:
 				complete_command = possible_completions[0]
-				cmd_strings[0] = complete_command
+				cmd_strings[0] = complete_command + " "
 			elif len(possible_completions) > 1:
 				names = possible_completions[:]
 				sample_name = names.pop(0)
@@ -258,9 +268,7 @@ class Command:
 		self.function(*args)
 
 class ArgumentHandler:
-	def __init__(self, arg_type=ARG_STRING, filter_functions=None):
-		self.type = arg_type
-
+	def __init__(self, filter_functions=None):
 		if not getattr(filter_functions, '__iter__', False):
 			filter_functions = (filter_functions,)
 
@@ -304,8 +312,8 @@ class ArgumentHandler:
 		return """Enter some text that starts and ends with a double-quote (")."""
 	
 class GameObjectArgumentHandler(ArgumentHandler):
-	def __init__(self, arg_type=ARG_OBJECT, filter_functions=[], search_dict=None, no_target_message="No targets available for this command; Try a different command."):
-		ArgumentHandler.__init__(self, arg_type=arg_type, filter_functions=filter_functions)
+	def __init__(self, filter_functions=[], search_dict=None, no_target_message="No targets available for this command; Try a different command."):
+		ArgumentHandler.__init__(self, filter_functions=filter_functions)
 		self.no_target_message = no_target_message
 		self.search_dict = search_dict
 	
@@ -335,10 +343,41 @@ class GameObjectArgumentHandler(ArgumentHandler):
 		else:
 			return self.no_target_message
 
+class DictKeyArgumentHandler(ArgumentHandler):
+	def __init__(self, filter_functions=[], search_dict=None, no_target_message="No targets available for this command; Try a different command."):
+		ArgumentHandler.__init__(self, filter_functions=filter_functions)
+		self.no_target_message = no_target_message
+		self.search_dict = search_dict
+	
+	def get_target_for_arg_string(self, arg_string):
+		if arg_string in self.search_dict:
+			target = self.search_dict[arg_string]
+			
+			for filter_function in self.filters:
+				if not filter_function(target):
+					return None
+			
+			return arg_string
+		else:
+			return None
+
+	def get_completions_starting_with(self, arg_string):
+		possible_completions = [string  for string in self.search_dict.keys() if string.startswith(arg_string)]
+		for filter_function in self.filters:
+			possible_completions = [name for name in possible_completions if filter_function(self.search_dict[name])]
+		possible_completions.sort()
+		return possible_completions
+	
+	def context_help_for_arg_string(self, arg_string):
+		completions = self.get_completions_starting_with(arg_string)
+		if len(completions) > 0 :
+			return ", ".join(completions)
+		else:
+			return self.no_target_message
 
 class StringArgumentHandler(ArgumentHandler):
-	def __init__(self, arg_type=ARG_OBJECT, filter_functions=[], help_message="Enter a string."):
-		ArgumentHandler.__init__(self, arg_type=arg_type, filter_functions=filter_functions)
+	def __init__(self, filter_functions=[], help_message="Enter a string."):
+		ArgumentHandler.__init__(self, filter_functions=filter_functions)
 		
 		self.help_message = help_message
 
@@ -349,8 +388,8 @@ class StringArgumentHandler(ArgumentHandler):
 		return self.help_message
 
 class IntegerArgumentHandler(ArgumentHandler):
-	def __init__(self, arg_type=ARG_OBJECT, filter_functions=[], help_message="Enter an integer."):
-		ArgumentHandler.__init__(self, arg_type=arg_type, filter_functions=filter_functions)
+	def __init__(self, filter_functions=[], help_message="Enter an integer."):
+		ArgumentHandler.__init__(self, filter_functions=filter_functions)
 		
 		self.help_message = help_message
 
@@ -364,8 +403,8 @@ class IntegerArgumentHandler(ArgumentHandler):
 		return self.help_message
 
 class MultipleChoiceArgumentHandler(ArgumentHandler):
-	def __init__(self, arg_type=ARG_OBJECT, filter_functions=[], choices=["yes","no"]):
-		ArgumentHandler.__init__(self, arg_type=arg_type, filter_functions=filter_functions)
+	def __init__(self, filter_functions=[], choices=["yes","no"]):
+		ArgumentHandler.__init__(self, filter_functions=filter_functions)
 		
 		self.choices = choices
 	

@@ -8,24 +8,16 @@ Naturally, this does not guard against operator error. If anything in this
 file is really obviously incorrect, unwise, or whatever consider it a bug.
 -->
 
-<!-- 'deep_space_survival_data' is the root element and identifies which game
-the data should be added to as well as which engine version the data is meant
-to work correctly with. -->
-<deep_space_survival_data game_id='adversity' engine_version='1.0'>
-	<!-- Descriptions can be created anywhere in the root element and attached
-	by ID to various other things. All whitespace is collapsed. For manual line
-	breaks, use the \n escape as in python. -->
-	<description id='cryo_recovery_a'>
+<deep_space_survival_data loader_version='1.0'>
+	<text id='cryo_recovery_a'>
 		This small room is well-lit and smells of sanitized air. A huge machine
 		dominates one half of the room; the cryonic recovery module responsible
 		for restoring frozen bodies to life. The rest of the room is decorated
 		with various medical devices related to the thawing process. There are
 		two ways out; a door marked 'Supplies' and another marked 'Recovery
 		Suite'.
-	</description>
-	<!-- room_template elements define room templates which are in turn used to
-	create room instances. -->
-	<room_template
+	</text>
+	<template
 		id='cryo_recovery_room'
 		name='Cryo Recovery Module'
 		size='5x5x3'
@@ -33,15 +25,11 @@ to work correctly with. -->
 		floor_type='safety_panel'
 		wall_type='blue_medical'
 		ceiling_type='fluorescent_panel'>
-		<!-- item_instance tags go inside other tags to define contents. in this
-		case, the item_instance tags belong to the room_template; whenever a
-		room instance is created from this template it will contain these items
-		-->
-		<item_instance template='recovery_module' />
-		<item_instance template='medical_equipment' />
-		<item_instance template='electrical_socket' />
-	</room_template>
-	<room_template
+		<item template='recovery_module' />
+		<item template='medical_equipment' />
+		<item template='electrical_socket' />
+	</template>
+	<template
 		id='small_storage_room'
 		name='Small Storage Room'
 		size='2.5x2.5x3'
@@ -49,19 +37,20 @@ to work correctly with. -->
 		floor_type='safety_panel'
 		wall_type='gray_utility'
 		ceiling_type='fluorescent_panel'>
-		<item_instance template='electrical_socket' />
-	</room_template>
-	<description id='generic_small_storage_room'>
+		<item template='electrical_socket' />
+	</template>
+	<text id='generic_small_storage_room'>
 		This is a completely ordinary storage room. It is not much larger than
 		the average closet. The walls are painted a not-quite-consistent shade
 		of gray and the room is lit with harsh fluorescent lamps.
-	</description>
+	</text>
 	
-	<door_template
+	<template
 		id='standard_automatic_door'
 		name='Door'
 		desc_id='std_door'/>
-	<description id='std_door'>
+
+	<text id='std_door'>
 		This is a standard air-tight automatic door controlled by motion
 		sensors. Most star ships and space stations use a variation on this
 		design due to its combination safety and convenience. Such doors are
@@ -69,95 +58,71 @@ to work correctly with. -->
 		can be remotely opened or closed. The door seems to be locked in the
 		open position; the status lights above it indicate that this is because
 		a general evacuation order is in place."
-	</description>
+	</text>
 	
-	<!-- As seen here, the identifiers for various things can be completely out
-	of order with their references. It is probably a good idea to create content
-	before you reference it, but for the sake of flexibility you can always use
-	an id before it has anything associated with it. This goes not only for
-	descriptions but also for templates and instances of various things. -->
-	<description id='generic_cryo_recovery_room'>
+	<text id='generic_cryo_recovery_room'>
 		This small room is well-lit and smells of sanitized air. A huge machine
 		dominates one half of the room; the cryonic recovery module responsible
-		for restoring frozen bodies\n to life. The rest of the room is decorated
+		for restoring frozen bodies to life. The rest of the room is decorated
 		with various medical devices related to the thawing process.
-	</description>
-	<!-- zone is the container element for the actual creation of rooms and
-	their content. It is also where map elements are defined and is the basic
-	organizational level for maps. -->
-	<zone id='cryo_wing' name="Cryonics Wing">
-		<map_room x='10' y='0' w='5' h='5' room='cryo_recovery_a' />
-		<room_instance
-			template='cryo_recovery_room' 
-			name='Cryo Recovery A' 
-			id='cryo_recovery_a'
-			desc_id='cryo_recovery_a'
-			network_path='bulwark:hab/med/cryo/rec_a'
-			utility_section='Bulwark; Medical; Sector D'
-			life_support_section='Bulwark Habitation Section 16'>
+	</text>
 
-			<!-- Create a single item. It'll just be sitting around the room.
-			If the template has any options, they'll all use defaults. -->
-			<item_instance template='pistol' />
+	<room
+		template='cryo_recovery_room' 
+		name='Cryo Recovery A' 
+		id='cryo_recovery_a'
+		desc_id='cryo_recovery_a'
+		network_path='bulwark:hab/med/cryo/rec_a'
+		utility_section='Bulwark; Medical; Sector D'
+		life_support_section='Bulwark Habitation Section 16'>
 
-			<!--  -->
-			<item_instance template='pistol_mag' />
-			<item_instance template='pistol_mag' />
-			
-			<!-- Create a single stack; this only works for stackables. Quantity
-			and stack_size can be combined to create several stacks at once.-->
-			<item_instance template='11mm_pistol_ammo' stack_size='16' />
-			
-			<door_instance
-				name="Door marked 'Supply Room'"
-				template='standard_automatic_door'
-				destination='cryo_recovery_a_supply_room'/>
-		</room_instance>
+		<weapon template='11mm_handgun' />
+
+		<item template='11mm_handgun_mag' />
+		<item template='11mm_handgun_mag' />
 		
-		<map_room x='7.5' y='2.5' w='2.5' h='2.5'
-			room='cryo_recovery_a_supply_room'/>
-		<room_instance
-			template='small_storage_room'
-			name='Supply Room'
-			id='cryo_recovery_a_supply_room'
-			network_path='bulwark:hab/med/cryo/rec_a'
-			utility_section='Bulwark; Medical; Sector D'
-			life_support_section='Bulwark Habitation Section 16'>
-			<!-- Notice the lack of desc_id in this instance; the room will use
-			the description from the template if you don't specify one. -->
-			<door_instance
-				name="Exit Door"
-				template='standard_automatic_door'
-				destination='cryo_recovery_a'/>
-			<!-- This item is actually a container. This container template has
-			default properties and contents so we don't need to fill it. -->
-			<item_instance template='nutripak_box_24' />
+		<item template='11mm_handgun_cart' stack_size='16' />
 			
-			<!-- This item is a generic container that has nothing in it when
-			first created. By putting more item_instance elements inside the
-			container's element, we add them to the container. -->
-			<item_instance template='storage_crate'>
-				<item_instance template='first_aid_kit' />
-				<item_instance
-					template='small_plastic_carton'
-					name='QuickFix Six Pack'>
-					<item_instance template='quickfix_hypo' stack_size='6' />
-				</item_instance>
-			</item_instance>
-		</room_instance>
-	</zone>
-	<item_template name="11mm Pistol" id="pistol"/>
-	<item_template name="11mm Pistol Mag" id="pistol_mag"/>
-	<item_template name="11mm Caseless Pistol Ammo" id="11mm_pistol_ammo"/>
-	<item_template name="NutriPak Nutritional Substitute" id="nutripak"/>
-	<item_template name="NutriPack 24-Pack" id="nutripak_box_24">
-		<item_instance template='nutripak' stack_size='24'/>
-	</item_template>
-	<item_template name="Storage Crate" id="storage_crate"/>
-	<item_template name="QuickFix Hypo" id="quickfix_hypo"/>
-	<item_template name="Small Plastic Carton" id="small_plastic_carton"/>
-	<item_template name="First Aid Kit" id="first_aid_kit"/>
-	<description id="recovery_module">
+		<door
+			name="Door marked 'Supply Room'"
+			template='standard_automatic_door'
+			destination='cryo_recovery_a_supply_room'/>
+	</room>
+		
+	<room
+		template='small_storage_room'
+		name='Supply Room'
+		id='cryo_recovery_a_supply_room'
+		network_path='bulwark:hab/med/cryo/rec_a'
+		utility_section='Bulwark; Medical; Sector D'
+		life_support_section='Bulwark Habitation Section 16'>
+		<door
+			name="Exit Door"
+			template='standard_automatic_door'
+			destination='cryo_recovery_a'/>
+		<item template='nutripak_box_24' />
+			
+		<container template='storage_crate'>
+			<container template='first_aid_kit' />
+			<container
+				template='small_plastic_carton'
+				name='QuickFix Six Pack'>
+				<item template='quickfix_hypo' stack_size='6' />
+			</container>
+		</container>
+		<item template="gun_barrel"/>
+		<item template="gun_body"/>
+	</room>
+
+	<template id="nutripak" name="NutriPak Nutritional Substitute" item_type="food"/>
+	<template id="nutripak_box_24" name="NutriPack 24-Pack">
+		<item template='nutripak' stack_size='24'/>
+	</template>
+	<template id="storage_crate" name="Storage Crate"/>
+	<template id="quickfix_hypo" name="QuickFix Hypo" item_type="food"/>
+	<template id="small_plastic_carton" name="Small Plastic Carton"/>
+	<template id="first_aid_kit" name="First Aid Kit"/>
+	<text id="recovery_module">
 		This huge machine is responsible for restoring life to cryonically
 		frozen bodies. The largest part of the device is a tube-shaped thawing
 		chamber which holds the body during the revival process. Numerous thick
@@ -165,8 +130,15 @@ to work correctly with. -->
 		of the machine is attached to the wall; it looks like the frozen bodies
 		are fed through automatically from another room. The whole arrangement
 		is flanked by control computers and diagnostic equipment.
-	</description>
-	<item_template name="Recovery Module" id="recovery_module" desc_id="recovery_module"/>
-	<item_template name="Medical Equipment" id="medical_equipment"/>
-	<item_template name="Electrical Socket" id="electrical_socket"/>
+	</text>
+	<template name="Recovery Module" id="recovery_module" desc_id="recovery_module"/>
+	<template name="Medical Equipment" id="medical_equipment"/>
+	<template name="Electrical Socket" id="electrical_socket"/>
+	<template name="Gun Barrel" id="gun_barrel"/>
+	<template name="Gun Body" id="gun_body"/>
+	
+	<player_character id="the_player" name="The Player">
+		<hand id="right_hand" name="Your Right Hand" />
+		<hand id="left_hand" name="Your Left Hand" />
+	</player_character>
 </deep_space_survival_data>

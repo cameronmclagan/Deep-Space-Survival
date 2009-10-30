@@ -131,13 +131,12 @@ class LinearRatioContainer(Container):
 		
 		ratio_total = 0
 		for val in self.ratio:
-			print val
 			ratio_total += val
 		
 		length_total = 0
 		for val in self.ratio:
 			fraction = float(val)/float(ratio_total)
-			self.cell_length_list.append(int(float(length)*float(fraction)))
+			self.cell_length_list.append(int(round(float(length)*float(fraction))))
 			length_total += self.cell_length_list[-1]
 		
 		for x in xrange(length-length_total):

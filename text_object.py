@@ -1,4 +1,5 @@
 import re, pygame
+import resource_loader
 
 def make_line_break_events_based_on_text_width_and_font(text, width, font):
 	break_list = []
@@ -40,28 +41,26 @@ def make_line_break_events_based_on_text_width_and_font(text, width, font):
 	return break_list
 
 def do_text_substitution_using_dictionary(text, dictionary):
-	keyword_finder = re.compile(r"\%\{(\w+)\}\%")
-	keyword_list = keyword_finder.findall(text)
+	new_text = text.format(**dictionary)
 
-	for keyword in keyword_list:
-		temp_sub_re = re.compile( r"\%\{" + keyword + r"\}\%")
-		text = temp_sub_re.sub(dictionary.get(keyword,""), text)
-
-	return text
+	return new_text
 
 def make_color_change_events_for_text(text):
 	color_change_list = []
 
-	color_finder = re.compile(r"\#\{([0-9a-fA-F]{6,6})\}\#")
+	color_finder = re.compile(r"\#([0-9a-fA-FxX]{6,6})\#")
 
 	match = color_finder.search(text)
 
 	while match != None :
 		color_string = match.group(1)
-		red = int(color_string[0:2], 16)
-		green = int(color_string[2:4], 16)
-		blue = int(color_string[4:6], 16)
-		color_change_list.append((match.start(), (red, green, blue)))
+		if color_string.lower() == "xxxxxx":
+			color_change_list.append((match.start(), "RESET"))
+		else:
+			red = int(color_string[0:2], 16)
+			green = int(color_string[2:4], 16)
+			blue = int(color_string[4:6], 16)
+			color_change_list.append((match.start(), (red, green, blue)))
 		text = color_finder.sub('', text, 1)
 		match = color_finder.search(text)
 
@@ -73,7 +72,7 @@ class TextObject:
 	def __init__(self, width, text="", font_name="Droid Sans,Bitstream Vera Sans", font_size=16, font_color=(0xFF,0xFF,0xFF), font_bold=False, font_italic=False, sub_dict={}):
 		self.width = width
 		self.original_text = text
-		self.font = pygame.font.SysFont(font_name, font_size, font_bold, font_italic)
+		self.font = resource_loader.get_font(font_name, font_size, font_bold, font_italic)
 		self.font_color=font_color
 		self.sub_dict = sub_dict
 		self.reset()
@@ -122,6 +121,8 @@ class TextObject:
 			if current_color_index < len(color_changes) and color_changes[current_color_index][0] == n :
 				sub_line_list.append(font.render(text[last_draw_end:n].strip("\n"), True, current_fg_color))
 				current_fg_color = color_changes[current_color_index][1]
+				if current_fg_color == "RESET":
+					current_fg_color = self.font_color
 				current_color_index += 1
 				last_draw_end = n
 			
